@@ -12,7 +12,7 @@ app.post('/register', async (req, res) => {
       const { username, password } = req.body;
       try {
             const db = await connectToDatabase();
-            const [rows] = await db.query('SELECT * FROM user WHERE username=?',username);
+            const [rows] = await db.query('SELECT * FROM user WHERE username=?', username);
             if (rows.length > 0) {
                   return res.json({ message: "user alrady exist" });
             }
@@ -26,7 +26,26 @@ app.post('/register', async (req, res) => {
       console.log(username);
 });
 
+app.post('/login', async (req, res) => {
+      const { username, password } = req.body;
+      try {
+            const db = await connectToDatabase();
+            const [rows] = await db.query('SELECT * FROM user WHERE username=?', username);
+            if (rows.length === 0) {
+                  return res.status(404).json({ message: "User not exits" });
+            }
+            const isMatch = await bcrypt.compare(password, rows[0].password);
+            if (!isMatch) {
+                  return res.status(404).json({ message: "wrong-info" });
+            }
 
+            res.status(201).json({ message: "user register successfully" });
+      } catch (err) {
+            console.error(err);
+            res.status(500).json(err);
+      }
+      console.log(username);
+});
 app.listen(process.env.PORT, () => {
       console.log("Server is running..");
 })
