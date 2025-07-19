@@ -86,7 +86,7 @@ const Login = () => {
                               </button>
                               <div className="text-center mt-1">
                                     <span>Haven’t account?  </span>
-                                    <Link to='/signin' className="text-blue-500"> Sign up</Link>
+                                    <Link to='/Register' className="text-blue-500"> Sign up</Link>
                               </div>
                         </form>
                   </div>
