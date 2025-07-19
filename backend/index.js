@@ -18,10 +18,10 @@ app.post('/register', async (req, res) => {
             }
             const hashPassword = await bcrypt.hash(password, 10);
             await db.query("INSERT INTO user (username,password_hash) VALUES (?,?)", [username, hashPassword]);
-            res.status(201).json({ message: "user register successfully" });
+            return res.status(201).json({ message: "user register successfully" });
       } catch (err) {
             console.error(err);
-            res.status(500).json(err);
+            return res.status(500).json(err);
       }
       console.log(username);
 });
@@ -34,12 +34,12 @@ app.post('/login', async (req, res) => {
             if (rows.length === 0) {
                   return res.status(404).json({ message: "User not exits" });
             }
-            const isMatch = await bcrypt.compare(password, rows[0].password);
+            const isMatch = await bcrypt.compare(password, rows[0].password_hash);
             if (!isMatch) {
-                  return res.status(404).json({ message: "wrong-info" });
+                  return res.status(401).json({ message: "wrong-info" });
             }
 
-            res.status(201).json({ message: "user register successfully" });
+            return res.status(201).json({ message: "Login successfully" });
       } catch (err) {
             console.error(err);
             res.status(500).json(err);
