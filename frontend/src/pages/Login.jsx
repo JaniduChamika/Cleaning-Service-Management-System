@@ -32,6 +32,7 @@ const Login = () => {
             try {
                   const response = await axios.post('http://localhost:3000/login', user);
                   if (response.status == 201) {
+                        localStorage.setItem('token',response.data.token);
                         navigate('/');
                   } else if (response.data.message == "wrong-info") {
                         const newErrors = {};
