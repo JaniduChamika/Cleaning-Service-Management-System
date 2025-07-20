@@ -107,7 +107,7 @@ app.post('/add-booking', async (req, res) => {
             const sqlTimestamp = date.toISOString().slice(0, 19).replace('T', ' ');
             //end convert YYYY-MM-DDTHH:MM to YYYY-MM-DD HH:MM:SS
             const bookingData = [customer, address, sqlTimestamp, serviceType, user];
-            await db.query("INSERT INTO booking (customer_name,address,date_time,service_id,user_id) VALUES (?,?,?,?,?)", bookingData);
+            await db.query('INSERT INTO booking (customer_name,address,date_time,service_id,user_id) VALUES (?,?,?,?,?)', bookingData);
             return res.status(201).json({ message: "Booking added successfully" });
       } catch (err) {
             console.error(err);
@@ -123,7 +123,7 @@ app.get('/booking', verifyToken, async (req, res) => {
             const db = await connectToDatabase();
             const query = 'SELECT booking.id,booking.customer_name AS `customer`,booking.address,booking.date_time,service.name AS `service` FROM booking LEFT JOIN service ON booking.service_id=service.id';
             const [rows] = await db.query(query + ' WHERE user_id=?', [req.userId]);
-            console.log(rows);
+            // console.log(rows);
             if (rows.length <= 0) {
                   return res.status(403).json({ message: "Not found" });
             }
@@ -134,6 +134,13 @@ app.get('/booking', verifyToken, async (req, res) => {
             console.error(err);
             return res.status(500).json(err);
       }
+});
+
+app.delete('/booking/:id', async (req, res) => {
+      const bookingId = parseInt(req.params.id);
+       const db = await connectToDatabase();
+      await db.query('DELETE FROM booking WHERE id=?', bookingId);
+      res.status(200).json({ message: "Booking cancelled" });
 });
 
 app.listen(process.env.PORT, () => {
