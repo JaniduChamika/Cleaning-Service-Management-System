@@ -67,16 +67,30 @@ cd backend
 npm start
 ```
 The backend will run on:
-http://localhost:3000
+- http://localhost:3000
 
 ### 6. Start the Frontend (React App)
+
 ```bash
 cd frontend
 npm run dev
 ```
 The frontend will run on:
+- http://localhost:5173 (Vite default)
 
-http://localhost:5173 (Vite default)
 ---
+
+### 🔐 Admin Panel Access
+
+⚠️ Note: For simplicity during development, the Admin Panel can be accessed directly without login authentication.
+You can access the Admin Panel directly by visiting:
+```bash
+http://localhost:5173/AdminPanel
+```
+- No login is required.
+- This bypass is intended for demonstration purposes only.
+- In a production environment, proper authentication and role-based access control should be enforced
+---
+
 📅 Last Updated
-Date and Time: 06:10 PM +0530, Sunday, July 20, 2025
+Date and Time: 07:10 PM +0530, Sunday, July 20, 2025
