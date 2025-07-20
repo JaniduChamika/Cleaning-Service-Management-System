@@ -115,6 +115,27 @@ app.post('/add-booking', async (req, res) => {
       }
 
 });
+
+
+app.get('/booking', verifyToken, async (req, res) => {
+
+      try {
+            const db = await connectToDatabase();
+            const query = 'SELECT booking.id,booking.customer_name AS `customer`,booking.address,booking.date_time,service.name AS `service` FROM booking LEFT JOIN service ON booking.service_id=service.id';
+            const [rows] = await db.query(query + ' WHERE user_id=?', [req.userId]);
+            console.log(rows);
+            if (rows.length <= 0) {
+                  return res.status(403).json({ message: "Not found" });
+            }
+
+
+            return res.status(201).json({ booking: rows });
+      } catch (err) {
+            console.error(err);
+            return res.status(500).json(err);
+      }
+});
+
 app.listen(process.env.PORT, () => {
       console.log("Server is running..");
 })
