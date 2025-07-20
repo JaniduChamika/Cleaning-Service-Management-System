@@ -45,7 +45,7 @@ app.post('/login', async (req, res) => {
             console.error(err);
             return res.status(500).json(err);
       }
-  
+
 });
 // start login verification 
 // verify is there token (check user is logined)
@@ -224,7 +224,29 @@ app.put('/bookings/:id', verifyToken, async (req, res) => {
       }
 });
 
+// retrive all booking for admin panel
+app.get('/bookings-admin', async (req, res) => {
 
+      try {
+            const db = await connectToDatabase();
+            const query = `SELECT booking.id,booking.customer_name AS customer,
+            booking.address,booking.date_time,service.name AS service, user.username 
+             FROM booking 
+             LEFT JOIN service ON booking.service_id=service.id
+             LEFT JOIN user ON user.id=booking.user_id`;
+            const [rows] = await db.query(query);
+            // console.log(rows);
+            if (rows.length <= 0) {
+                  return res.status(403).json({ message: "Not found" });
+            }
+
+
+            return res.status(201).json({ booking: rows });
+      } catch (err) {
+            console.error(err);
+            return res.status(500).json(err);
+      }
+});
 app.listen(process.env.PORT, () => {
       console.log("Server is running..");
 })

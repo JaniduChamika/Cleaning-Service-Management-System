@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import Booking from './pages/NewBooking';
+import AdminPanel from './pages/AdminPanel';
 import './App.css'
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
         <Route path='/Signin' element={<Login />}></Route>
         <Route path='/Booking/new' element={<Booking />}></Route>
         <Route path='/Booking/edit/:id' element={<Booking />}></Route>
+        <Route path='/AdminPanel' element={<AdminPanel />}></Route>
       </Routes>
     </BrowserRouter>
   );
