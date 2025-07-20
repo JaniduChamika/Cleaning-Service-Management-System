@@ -55,7 +55,7 @@ const NewBooking = () => {
             }
       };
       //end load service types
-
+      //start load booking details to form
       const setform = async () => {
             if (id) {
                   try {
@@ -75,6 +75,7 @@ const NewBooking = () => {
                   }
             }
       }
+      //end load booking details to form
       useEffect(() => {
             fetchUser();
             fetchService();
@@ -94,6 +95,7 @@ const NewBooking = () => {
             return newErrors;
       };
       //end validate feilds
+      // start handle form submission
       async function handleSubmit(event) {
             event.preventDefault();
             const validationErrors = validate();
@@ -103,33 +105,27 @@ const NewBooking = () => {
             }
             setErrors({});
             try {
-
                   if (id) {
-                        const response = await axios.put(`http://localhost:3000/update-booking/${id}`, booking, {
+                        const response = await axios.put(`http://localhost:3000/bookings/${id}`, booking, {
                               headers: {
                                     "Authorization": `Bearer ${token}`
                               }
                         });
-
                         if (response.status === 201) {
                               navigate('/');
                         }
-
-                        console.log(response.status);
                   } else {
-                        const response = await axios.post('http://localhost:3000/add-booking', booking);
+                        const response = await axios.post('http://localhost:3000/bookings', booking);
                         if (response.status == 201) {
                               navigate('/');
                         }
-
-                        console.log(response);
                   }
-                  // const response = await axios.post('http://localhost:3000/add-booking', booking);
 
             } catch (error) {
                   console.log(error);
             }
-      }
+      };
+      // end handle form submission
       return (
             <div className="p-6 max-w-2xl mx-auto sm:p-4 md:p-6 lg:p-8">
                   <h1 className="text-xl font-semibold mb-6 flex items-center">
@@ -142,6 +138,7 @@ const NewBooking = () => {
                                     id="customerName"
                                     type="text"
                                     name="customer"
+                                    placeholder="Enter customer name"
                                     value={booking.customer}
                                     onChange={handleChanges}
                                     className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -157,6 +154,7 @@ const NewBooking = () => {
                                     id="address"
                                     type="text"
                                     name="address"
+                                    placeholder="Enter customer address"
                                     value={booking.address}
                                     onChange={handleChanges}
                                     className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
