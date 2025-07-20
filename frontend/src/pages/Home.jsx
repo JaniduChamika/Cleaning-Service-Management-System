@@ -1,17 +1,22 @@
 import axios from "axios";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 const Home = () => {
       const navigate = useNavigate();
+      const [bookings, setBookings] = useState([]);
+      const [userId, setUserId] = useState([]);
+      const token = localStorage.getItem('token');
       const fetchUser = async () => {
             try {
-                  const token = localStorage.getItem('token');
+
                   const response = await axios.get('http://localhost:3000/home', {
                         headers: {
                               "Authorization": `Bearer ${token}`
                         }
                   });
-                  if (response.status !== 201) {
+                  if (response.status === 201) {
+                        setUserId(response.data.userId);
+                  } else {
                         navigate('/Signin');
                   }
                   // console.log(response);
@@ -19,18 +24,29 @@ const Home = () => {
                   navigate('/Signin');
             }
       }
+      //start load bookings
+      const fetchBookings = async () => {
+            try {
+                  const response = await axios.get('http://localhost:3000/booking', {
+                        headers: {
+                              "Authorization": `Bearer ${token}`
+                        }
+                  });
+                  if (response.status === 201) {
+                        setBookings(response.data.booking);
+                        console.log(response.data.booking);
+                  }
+
+            } catch (error) {
+                  console.error(error);
+            }
+      };
+      //end load bookings
       useEffect(() => {
             fetchUser();
-      });
-      const bookings = [
-            { id: 1, serviceType: 'Service Type', address: 'Location', date: '2025/07/20', time: '12:20 PM', status: 'Complete' },
-            { id: 2, serviceType: 'Service Type', address: 'Location', date: '2025/07/20', time: '12:20 PM', status: 'Complete' },
-            { id: 3, serviceType: 'Service Type', address: 'Location', date: '2025/07/20', time: '12:20 PM', status: 'Complete' },
-            { id: 4, serviceType: 'Service Type', address: 'Location', date: '2025/07/20', time: '12:20 PM', status: 'Complete' },
-            { id: 5, serviceType: 'Service Type', address: 'Location', date: '2025/07/20', time: '12:20 PM', status: 'Complete' },
-            { id: 6, serviceType: 'Service Type', address: 'Location', date: '2025/07/20', time: '12:20 PM', status: 'Complete' },
-            { id: 7, serviceType: 'Service Type', address: 'Location', date: '2025/07/20', time: '12:20 PM', status: 'Complete' },
-      ];
+            fetchBookings();
+      }, []);
+
       return (
             <div className="p-6">
                   <h1 className="text-2xl font-semibold mb-6">Your Booking</h1>
@@ -39,24 +55,36 @@ const Home = () => {
                               <thead>
                                     <tr className="bg-gray-100 border-b">
                                           <th className="p-3 ">#</th>
+                                          <th className="p-3 ">Customer</th>
                                           <th className="p-3 ">Service Type</th>
                                           <th className="p-3 ">Address</th>
                                           <th className="p-3">Date</th>
                                           <th className="p-3 ">Time</th>
-                                          <th className="p-3 ">Status</th>
+                                          <th className="p-3 ">Action</th>
                                     </tr>
                               </thead>
                               <tbody>
-                                    {bookings.map((booking) => (
-                                          <tr key={booking.id} className=" hover:bg-blue-100 transition duration-200 border-b">
-                                                <td className="p-3 ">{booking.id}</td>
-                                                <td className="p-3"> {booking.serviceType}</td>
-                                                <td className="p-3 ">{booking.address}</td>
-                                                <td className="p-3 ">{booking.date}</td>
-                                                <td className="p-3 ">{booking.time}</td>
-                                                <td className="p-3 ">{booking.status}</td>
-                                          </tr>
-                                    ))}
+
+                                    {bookings.map((booking,index) => {
+                                          const dateObj = new Date(booking.date_time);
+                                          const date = dateObj.toISOString().split('T')[0];
+                                          const time = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                                          return (
+                                                <tr key={booking.id} className=" hover:bg-blue-100 transition duration-200 border-b">
+                                                      <td className="p-3 ">{index + 1}</td>
+                                                      <td className="p-3 ">{booking.customer}</td>
+                                                      <td className="p-3"> {booking.service}</td>
+                                                      <td className="p-3 ">{booking.address}</td>
+                                                      <td className="p-3 ">{date}</td>
+                                                      <td className="p-3 ">{time}</td>
+                                                      <td className="p-3 ">
+                                                            <button className="w-16 px-2 py-1 bg-gray-500 text-white rounded-lg hover:bg-gray-600 active:bg-gray-800 transition duration-200">Cancel</button>
+                                                            <button className="w-16 ms-2 px-2 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 active:bg-blue-800 transition duration-200">Edit</button>
+                                                      </td>
+                                                </tr>
+                                          )
+                                    })}
                               </tbody>
                         </table>
                   </div>
