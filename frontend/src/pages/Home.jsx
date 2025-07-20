@@ -47,6 +47,23 @@ const Home = () => {
             fetchBookings();
       }, []);
 
+      const handleCancelBooking = async (bookingId) => {
+            try {
+                  const confirm = window.confirm("Are you sure you want to cancel this booking?");
+                  if (!confirm) return;
+
+                  const response = await axios.delete(`http://localhost:3000/booking/${bookingId}`);
+
+                  if (response.status === 200) {
+                        // Remove the canceled booking from the state
+                        setBookings((prev) => prev.filter((booking) => booking.id !== bookingId));
+                        alert("Booking cancelled successfully!");
+                  }
+            } catch (error) {
+                  console.error("Error cancelling booking:", error);
+                  alert("Failed to cancel booking.");
+            }
+      };
       return (
             <div className="p-6">
                   <h1 className="text-2xl font-semibold mb-6">Your Booking</h1>
@@ -65,7 +82,7 @@ const Home = () => {
                               </thead>
                               <tbody>
 
-                                    {bookings.map((booking,index) => {
+                                    {bookings.map((booking, index) => {
                                           const dateObj = new Date(booking.date_time);
                                           const date = dateObj.toISOString().split('T')[0];
                                           const time = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -79,7 +96,10 @@ const Home = () => {
                                                       <td className="p-3 ">{date}</td>
                                                       <td className="p-3 ">{time}</td>
                                                       <td className="p-3 ">
-                                                            <button className="w-16 px-2 py-1 bg-gray-500 text-white rounded-lg hover:bg-gray-600 active:bg-gray-800 transition duration-200">Cancel</button>
+                                                            <button
+                                                                  className="w-16 px-2 py-1 bg-gray-500 text-white rounded-lg hover:bg-gray-600 active:bg-gray-800 transition duration-200"
+                                                                  onClick={() => handleCancelBooking(booking.id)}
+                                                            >Cancel</button>
                                                             <button className="w-16 ms-2 px-2 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 active:bg-blue-800 transition duration-200">Edit</button>
                                                       </td>
                                                 </tr>
