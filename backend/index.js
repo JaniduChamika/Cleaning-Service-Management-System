@@ -47,7 +47,7 @@ app.post('/login', async (req, res) => {
       }
       console.log(username);
 });
-
+// start login verification 
 // verify is there token (check user is logined)
 const verifyToken = async (req, res, next) => {
       try {
@@ -72,13 +72,49 @@ app.get('/home', verifyToken, async (req, res) => {
                   return res.status(404).json({ message: "User not exits" });
             }
 
-            return res.status(201).json({ user: rows[0] });
+            return res.status(201).json({ userId: rows[0].id });
       } catch (err) {
             // console.log(err);
             return res.status(500).json(err);
       }
 });
+// end login verification
 
+app.get('/service', async (req, res) => {
+
+      try {
+            const db = await connectToDatabase();
+            const [rows] = await db.query('SELECT * FROM service ');
+            if (rows.length <= 0) {
+                  return res.status(404).json({ message: "Service not found" });
+            }
+
+
+            return res.status(201).json({ service: rows });
+      } catch (err) {
+            console.error(err);
+            return res.status(500).json(err);
+      }
+});
+
+app.post('/add-booking', async (req, res) => {
+      const { user, customer, address, datetime, serviceType } = req.body;
+      try {
+            const db = await connectToDatabase();
+            //start convert YYYY-MM-DDTHH:MM to YYYY-MM-DD HH:MM:SS
+            const inputValue = datetime;
+            const date = new Date(inputValue);
+            const sqlTimestamp = date.toISOString().slice(0, 19).replace('T', ' ');
+            //end convert YYYY-MM-DDTHH:MM to YYYY-MM-DD HH:MM:SS
+            const bookingData = [customer, address, sqlTimestamp, serviceType, user];
+            await db.query("INSERT INTO booking (customer_name,address,date_time,service_id,user_id) VALUES (?,?,?,?,?)", bookingData);
+            return res.status(201).json({ message: "Booking added successfully" });
+      } catch (err) {
+            console.error(err);
+            return res.status(500).json(err);
+      }
+
+});
 app.listen(process.env.PORT, () => {
       console.log("Server is running..");
 })
