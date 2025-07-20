@@ -247,6 +247,7 @@ app.get('/bookings-admin', async (req, res) => {
             return res.status(500).json(err);
       }
 });
-app.listen(process.env.PORT, () => {
+const PORT = process.env.PORT || 5000
+app.listen(PORT, () => {
       console.log("Server is running..");
 })
