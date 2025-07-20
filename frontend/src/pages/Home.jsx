@@ -52,7 +52,11 @@ const Home = () => {
                   const confirm = window.confirm("Are you sure you want to cancel this booking?");
                   if (!confirm) return;
 
-                  const response = await axios.delete(`http://localhost:3000/booking/${bookingId}`);
+                  const response = await axios.delete(`http://localhost:3000/booking/${bookingId}`, {
+                        headers: {
+                              "Authorization": `Bearer ${token}`
+                        }
+                  });
 
                   if (response.status === 200) {
                         // Remove the canceled booking from the state
@@ -65,10 +69,10 @@ const Home = () => {
             }
       };
       return (
-            <div className="p-6">
+            <div className="p-6 ">
                   <h1 className="text-2xl font-semibold mb-6">Your Booking</h1>
                   <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
+                        <table className="w-full min-w-6xl text-left border-collapse">
                               <thead>
                                     <tr className="bg-gray-100 border-b">
                                           <th className="p-3 ">#</th>
@@ -100,7 +104,9 @@ const Home = () => {
                                                                   className="w-16 px-2 py-1 bg-gray-500 text-white rounded-lg hover:bg-gray-600 active:bg-gray-800 transition duration-200"
                                                                   onClick={() => handleCancelBooking(booking.id)}
                                                             >Cancel</button>
-                                                            <button className="w-16 ms-2 px-2 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 active:bg-blue-800 transition duration-200">Edit</button>
+                                                            <button
+                                                                  onClick={() => navigate(`/booking/edit/${booking.id}`)}
+                                                                  className="w-16 ms-2 px-2 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 active:bg-blue-800 transition duration-200">Edit</button>
                                                       </td>
                                                 </tr>
                                           )

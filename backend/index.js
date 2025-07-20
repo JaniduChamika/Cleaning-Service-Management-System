@@ -101,11 +101,8 @@ app.post('/add-booking', async (req, res) => {
       const { user, customer, address, datetime, serviceType } = req.body;
       try {
             const db = await connectToDatabase();
-            //start convert YYYY-MM-DDTHH:MM to YYYY-MM-DD HH:MM:SS
-            const inputValue = datetime;
-            const date = new Date(inputValue);
-            const sqlTimestamp = date.toISOString().slice(0, 19).replace('T', ' ');
-            //end convert YYYY-MM-DDTHH:MM to YYYY-MM-DD HH:MM:SS
+
+            const sqlTimestamp = fomateDateTimeToDB(datetime);
             const bookingData = [customer, address, sqlTimestamp, serviceType, user];
             await db.query('INSERT INTO booking (customer_name,address,date_time,service_id,user_id) VALUES (?,?,?,?,?)', bookingData);
             return res.status(201).json({ message: "Booking added successfully" });
@@ -115,7 +112,21 @@ app.post('/add-booking', async (req, res) => {
       }
 
 });
+//convert YYYY-MM-DDTHH:MM to YYYY-MM-DD HH:MM:SS
+function fomateDateTimeToDB(dateString) {
+      console.log(dateString);
+      const date = new Date(dateString);
+      const pad = (n) => n.toString().padStart(2, '0');
 
+      const year = date.getFullYear();
+      const month = pad(date.getMonth() + 1);
+      const day = pad(date.getDate());
+      const hours = pad(date.getHours());
+      const minutes = pad(date.getMinutes());
+      const seconds = pad(date.getSeconds());
+
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
 
 app.get('/booking', verifyToken, async (req, res) => {
 
@@ -136,13 +147,75 @@ app.get('/booking', verifyToken, async (req, res) => {
       }
 });
 
-app.delete('/booking/:id', async (req, res) => {
-      const bookingId = parseInt(req.params.id);
-       const db = await connectToDatabase();
-      await db.query('DELETE FROM booking WHERE id=?', bookingId);
-      res.status(200).json({ message: "Booking cancelled" });
+app.delete('/booking/:id', verifyToken, async (req, res) => {
+      try {
+            const bookingId = parseInt(req.params.id);
+            const db = await connectToDatabase();
+            //check authorised user
+            const [rows] = await db.query('SELECT * FROM booking WHERE id=? AND user_id=?', [bookingId, req.userId]);
+            if (rows.length <= 0) {
+                  return res.status(403).json({ message: 'Access Denied' });
+            }
+            await db.query('DELETE FROM booking WHERE id=?', bookingId);
+            return res.status(200).json({ message: "Booking cancelled" });
+      } catch (error) {
+            console.error(err);
+            return res.status(500).json(err);
+      }
+
 });
 
+app.get('/booking/edit/:id', verifyToken, async (req, res) => {
+      try {
+            const bookingId = parseInt(req.params.id);
+            const db = await connectToDatabase();
+            const [rows] = await db.query('SELECT * FROM booking WHERE id=? AND user_id=?', [bookingId, req.userId]);
+            // console.log(rows)
+            if (rows.length <= 0) {
+                  return res.status(403).json({ message: 'Access Denied' });
+            }
+
+            const booking = {
+                  user: req.userId || '',
+                  customer: rows[0].customer_name || '',
+                  address: rows[0].address || '',
+                  datetime: fomateDateTimeFront(rows[0].date_time),
+                  serviceType: rows[0].service_id || ''
+            };
+            return res.status(201).json({ booking: booking });
+      } catch (error) {
+            console.error('Error fetching booking:', err);
+            return res.status(500).json(err);
+      }
+});
+
+function fomateDateTimeFront(dateString) {
+      const date = new Date(dateString);
+      const offset = date.getTimezoneOffset(); // in minutes
+      const localDate = new Date(date.getTime() - offset * 60000);
+      return localDate.toISOString().slice(0, 16);
+}
+app.put('/update-booking/:id', verifyToken, async (req, res) => {
+
+      try {
+            const db = await connectToDatabase();
+            const { user, customer, address, datetime, serviceType } = req.body;
+            const bookingId = parseInt(req.params.id);
+            //check authorised user
+            const [rows] = await db.query('SELECT * FROM booking WHERE id=? AND user_id=?', [bookingId, req.userId]);
+            if (rows.length <= 0) {
+                  return res.status(403).json({ message: 'Access Denied' });
+            }
+            const sqlTimestamp = fomateDateTimeToDB(datetime);
+            console.log(sqlTimestamp);
+            const bookingData = [customer, address, sqlTimestamp, serviceType, bookingId];
+            await db.query('UPDATE booking SET customer_name=?,address=?,date_time=?,service_id=? WHERE id=? ', bookingData);
+            return res.status(201).json({ message: "Booking updated success" });
+      } catch (error) {
+            console.error('Error fetching booking:', err);
+            return res.status(500).json(err);
+      }
+});
 app.listen(process.env.PORT, () => {
       console.log("Server is running..");
 })
