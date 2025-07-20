@@ -23,11 +23,11 @@ const Home = () => {
             } catch (error) {
                   navigate('/Signin');
             }
-      }
+      };
       //start load bookings
       const fetchBookings = async () => {
             try {
-                  const response = await axios.get('http://localhost:3000/booking', {
+                  const response = await axios.get('http://localhost:3000/bookings', {
                         headers: {
                               "Authorization": `Bearer ${token}`
                         }
@@ -46,13 +46,13 @@ const Home = () => {
             fetchUser();
             fetchBookings();
       }, []);
-
+      // start request to cancel booking
       const handleCancelBooking = async (bookingId) => {
             try {
                   const confirm = window.confirm("Are you sure you want to cancel this booking?");
                   if (!confirm) return;
 
-                  const response = await axios.delete(`http://localhost:3000/booking/${bookingId}`, {
+                  const response = await axios.delete(`http://localhost:3000/bookings/${bookingId}`, {
                         headers: {
                               "Authorization": `Bearer ${token}`
                         }
@@ -68,8 +68,16 @@ const Home = () => {
                   alert("Failed to cancel booking.");
             }
       };
+      // end request to cancel booking
       return (
-            <div className="p-6 ">
+            <div className="p-4  justify-start min-h-screen">
+                  <div className="flex flex-col  items-end">
+                        <button
+                              onClick={() => { localStorage.removeItem("token"); navigate('/Signin'); }}
+                              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+                              Logout
+                        </button>
+                  </div>
                   <h1 className="text-2xl font-semibold mb-6">Your Booking</h1>
                   <div className="overflow-x-auto">
                         <table className="w-full min-w-6xl text-left border-collapse">
@@ -105,7 +113,7 @@ const Home = () => {
                                                                   onClick={() => handleCancelBooking(booking.id)}
                                                             >Cancel</button>
                                                             <button
-                                                                  onClick={() => navigate(`/booking/edit/${booking.id}`)}
+                                                                  onClick={() => navigate(`/Booking/edit/${booking.id}`)}
                                                                   className="w-16 ms-2 px-2 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 active:bg-blue-800 transition duration-200">Edit</button>
                                                       </td>
                                                 </tr>
@@ -115,7 +123,7 @@ const Home = () => {
                         </table>
                   </div>
                   <div className="mt-6 text-center">
-                        <button onClick={() => navigate('/Booking')} className="p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200">
+                        <button onClick={() => navigate('/Booking/new')} className="p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200">
                               Make New Booking
                         </button>
                   </div>

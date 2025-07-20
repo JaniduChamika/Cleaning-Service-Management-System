@@ -8,7 +8,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-
+//register user to database
 app.post('/register', async (req, res) => {
       const { username, password } = req.body;
       try {
@@ -26,7 +26,7 @@ app.post('/register', async (req, res) => {
       }
 
 });
-
+//check login details from database & create toekn
 app.post('/login', async (req, res) => {
       const { username, password } = req.body;
       try {
@@ -45,7 +45,7 @@ app.post('/login', async (req, res) => {
             console.error(err);
             return res.status(500).json(err);
       }
-      console.log(username);
+  
 });
 // start login verification 
 // verify is there token (check user is logined)
@@ -63,7 +63,7 @@ const verifyToken = async (req, res, next) => {
             return res.status(500).json({ message: "server error" });
       }
 };
-
+//get user according to token
 app.get('/home', verifyToken, async (req, res) => {
       try {
             const db = await connectToDatabase();
@@ -80,6 +80,7 @@ app.get('/home', verifyToken, async (req, res) => {
 });
 // end login verification
 
+//retrive service type to load selector
 app.get('/service', async (req, res) => {
 
       try {
@@ -97,7 +98,8 @@ app.get('/service', async (req, res) => {
       }
 });
 
-app.post('/add-booking', async (req, res) => {
+//add new booking to the database
+app.post('/bookings', async (req, res) => {
       const { user, customer, address, datetime, serviceType } = req.body;
       try {
             const db = await connectToDatabase();
@@ -128,7 +130,8 @@ function fomateDateTimeToDB(dateString) {
       return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
-app.get('/booking', verifyToken, async (req, res) => {
+// retrive booking details relevant to user
+app.get('/bookings', verifyToken, async (req, res) => {
 
       try {
             const db = await connectToDatabase();
@@ -147,7 +150,8 @@ app.get('/booking', verifyToken, async (req, res) => {
       }
 });
 
-app.delete('/booking/:id', verifyToken, async (req, res) => {
+//delete booking from database
+app.delete('/bookings/:id', verifyToken, async (req, res) => {
       try {
             const bookingId = parseInt(req.params.id);
             const db = await connectToDatabase();
@@ -165,6 +169,7 @@ app.delete('/booking/:id', verifyToken, async (req, res) => {
 
 });
 
+//retrive booking details corresponding to bookId
 app.get('/booking/edit/:id', verifyToken, async (req, res) => {
       try {
             const bookingId = parseInt(req.params.id);
@@ -188,14 +193,16 @@ app.get('/booking/edit/:id', verifyToken, async (req, res) => {
             return res.status(500).json(err);
       }
 });
-
+//convert YYYY-MM-DD HH:MM:SS to YYYY-MM-DDTHH:MM 
 function fomateDateTimeFront(dateString) {
       const date = new Date(dateString);
       const offset = date.getTimezoneOffset(); // in minutes
       const localDate = new Date(date.getTime() - offset * 60000);
       return localDate.toISOString().slice(0, 16);
 }
-app.put('/update-booking/:id', verifyToken, async (req, res) => {
+
+//update booking details from database
+app.put('/bookings/:id', verifyToken, async (req, res) => {
 
       try {
             const db = await connectToDatabase();
@@ -216,6 +223,8 @@ app.put('/update-booking/:id', verifyToken, async (req, res) => {
             return res.status(500).json(err);
       }
 });
+
+
 app.listen(process.env.PORT, () => {
       console.log("Server is running..");
 })
