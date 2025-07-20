@@ -1,7 +1,8 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 const NewBooking = () => {
+      const { id } = useParams();
       const [services, setServices] = useState([]);
       const [booking, setBooking] = useState({
             user: '',
@@ -12,7 +13,7 @@ const NewBooking = () => {
       });
       const [errors, setErrors] = useState({});
       const navigate = useNavigate();
-
+      const token = localStorage.getItem('token');
       //start update booking object
       const handleChanges = (e) => {
             setBooking({ ...booking, [e.target.name]: e.target.value });
@@ -22,7 +23,7 @@ const NewBooking = () => {
       //start check user is logined
       const fetchUser = async () => {
             try {
-                  const token = localStorage.getItem('token');
+
                   const response = await axios.get('http://localhost:3000/home', {
                         headers: {
                               "Authorization": `Bearer ${token}`
@@ -46,6 +47,7 @@ const NewBooking = () => {
                   const response = await axios.get('http://localhost:3000/service');
                   if (response.status === 201) {
                         setServices(response.data.service);
+
                   }
 
             } catch (error) {
@@ -53,9 +55,31 @@ const NewBooking = () => {
             }
       };
       //end load service types
+
+      const setform = async () => {
+            if (id) {
+                  try {
+                        const response = await axios.get(`http://localhost:3000/booking/edit/${id}`, {
+                              headers: {
+                                    "Authorization": `Bearer ${token}`
+                              }
+                        });
+                        if (response.status === 201) {
+
+                              setBooking(response.data.booking);
+                        }
+                        console.log(response.status);
+                  } catch (error) {
+                        console.error(error);
+                        navigate('/');
+                  }
+            }
+      }
       useEffect(() => {
             fetchUser();
             fetchService();
+            setform();
+
       }, []);
       //start validate feilds
       const validate = () => {
@@ -65,7 +89,7 @@ const NewBooking = () => {
             if (!booking.customer.trim()) newErrors.customer = 'Customer name is required';
             if (!booking.address.trim()) newErrors.address = 'Address is required';
             if (!booking.datetime.trim()) newErrors.datetime = 'Date Time is required';
-            if (!booking.serviceType.trim()) newErrors.serviceType = 'Service Type is required';
+            if (!String(booking.serviceType).trim()) newErrors.serviceType = 'Service Type is required';
             if (selectedDate < now) newErrors.datetime = 'Invalid date & time';
             return newErrors;
       };
@@ -78,24 +102,38 @@ const NewBooking = () => {
                   return;
             }
             setErrors({});
-
             try {
-                  const response = await axios.post('http://localhost:3000/add-booking', booking);
-                  if (response.status == 201) {
-                        navigate('/');
-                  }
 
-                  console.log(response);
+                  if (id) {
+                        const response = await axios.put(`http://localhost:3000/update-booking/${id}`, booking, {
+                              headers: {
+                                    "Authorization": `Bearer ${token}`
+                              }
+                        });
+
+                        if (response.status === 201) {
+                              navigate('/');
+                        }
+
+                        console.log(response.status);
+                  } else {
+                        const response = await axios.post('http://localhost:3000/add-booking', booking);
+                        if (response.status == 201) {
+                              navigate('/');
+                        }
+
+                        console.log(response);
+                  }
+                  // const response = await axios.post('http://localhost:3000/add-booking', booking);
 
             } catch (error) {
                   console.log(error);
             }
-
       }
       return (
             <div className="p-6 max-w-2xl mx-auto sm:p-4 md:p-6 lg:p-8">
                   <h1 className="text-xl font-semibold mb-6 flex items-center">
-                        Booking a Service
+                        {id ? "Edit Booking" : "Booking a Service"}
                   </h1>
                   <form className="space-y-4 text-start " onSubmit={handleSubmit}>
                         <div className="mb-0">
@@ -104,6 +142,7 @@ const NewBooking = () => {
                                     id="customerName"
                                     type="text"
                                     name="customer"
+                                    value={booking.customer}
                                     onChange={handleChanges}
                                     className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                               />
@@ -118,6 +157,7 @@ const NewBooking = () => {
                                     id="address"
                                     type="text"
                                     name="address"
+                                    value={booking.address}
                                     onChange={handleChanges}
                                     className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                               />
@@ -132,6 +172,7 @@ const NewBooking = () => {
                                     id="date"
                                     type="datetime-local"
                                     name="datetime"
+                                    value={booking.datetime}
                                     onChange={handleChanges}
                                     className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                               />
@@ -146,6 +187,7 @@ const NewBooking = () => {
                                     name="serviceType"
                                     id="serviceType"
                                     onChange={handleChanges}
+                                    value={booking.serviceType}
                                     className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                               >
                                     <option value="">Select a Service Type</option>
@@ -170,7 +212,8 @@ const NewBooking = () => {
                                     type="submit"
                                     className="p-3 px-11 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200"
                               >
-                                    Submit
+                                    {id ? "Save" : "Submit"}
+
                               </button>
                         </div>
                   </form>
