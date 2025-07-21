@@ -27,7 +27,7 @@ This is a Node.js + MySQL-based Cleaning Service Management System with a RESTfu
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/your-username/your-repo-name.git](https://github.com/JaniduChamika/Cleaning-Service-Management-System.git
+git clone https://github.com/JaniduChamika/Cleaning-Service-Management-System.git
 cd Cleaning-Service-Management-System
 ```
 ### 2. Install dependencies
